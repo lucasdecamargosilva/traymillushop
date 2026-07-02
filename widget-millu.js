@@ -951,7 +951,11 @@
         function getInstallment() {
             var el = document.querySelector('.product-installments, .txt-corparcelas, [class*="parcela"]');
             var t = el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : '';
-            return /\dx/.test(t) ? t.replace(/^(ou|em at[ée])\s*/i, '') : '';
+            if (!/\dx/.test(t)) return '';
+            t = t.replace(/^(ou|em at[ée])\s*/i, '');
+            // Corta a bandeira/adquirente que a Tray anexa (ex.: "Sem juros MasterCard - Vindi")
+            t = t.replace(/(sem juros|com juros).*/i, '$1');
+            return t.trim();
         }
         // Botão nativo de compra da loja (Tray).
         function findStoreBuyBtn() {
