@@ -219,10 +219,10 @@
 
         :root {
             --c-bg: #ffffff;
-            --c-surface: #f0fafa;
+            --c-surface: #fdf0f5;
             --c-ink: #111111;
             --c-muted: #999;
-            --c-line: #b8dde8;
+            --c-line: #f5c6da;
             --c-accent: #111111;
             --c-danger: #cc3333;
             --font-display: 'Bebas Neue', sans-serif;
@@ -619,20 +619,20 @@
             flex-shrink: 0; border-top: 1px solid var(--c-line); text-decoration: none;
         }
         .q-powered-footer span { font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--c-muted); }
-        /* ── Marina: teal #6dadbc + pink #e54e88 ── */
-        :root { --c-surface: #f0fafa; --c-line: #b8dde8; }
-        .q-btn-black { background: #6dadbc !important; }
-        .q-btn-black:hover:not(:disabled) { background: #5b9daa !important; }
-        .q-btn-black:disabled { background: #b8dde8 !important; }
-        .q-face-corner { border-color: #6dadbc !important; }
-        .q-terms-row a { color: #e54e88 !important; }
-        .q-upload-btn:hover { border-color: #6dadbc; color: #6dadbc; }
-        .q-btn-outline:hover { border-color: #6dadbc; color: #6dadbc; }
-        .q-input:focus { border-color: #6dadbc !important; }
-        .q-loading-bar > div { background: #6dadbc !important; }
-        .q-tip-box { background: #e8f7fa !important; border-left-color: #6dadbc !important; color: #2d6b7a !important; }
-        .q-tip-box i { color: #6dadbc !important; }
-        #q-related-products h4 { color: #6dadbc !important; }
+        /* ── Millu: rosa #e0457f + branco ── */
+        :root { --c-surface: #fdf0f5; --c-line: #f5c6da; }
+        .q-btn-black { background: #e0457f !important; }
+        .q-btn-black:hover:not(:disabled) { background: #c73868 !important; }
+        .q-btn-black:disabled { background: #f5c6da !important; }
+        .q-face-corner { border-color: #e0457f !important; }
+        .q-terms-row a { color: #e0457f !important; }
+        .q-upload-btn:hover { border-color: #e0457f; color: #e0457f; }
+        .q-btn-outline:hover { border-color: #e0457f; color: #e0457f; }
+        .q-input:focus { border-color: #e0457f !important; }
+        .q-loading-bar > div { background: #e0457f !important; }
+        .q-tip-box { background: #fdf0f5 !important; border-left-color: #e0457f !important; color: #a03360 !important; }
+        .q-tip-box i { color: #e0457f !important; }
+        #q-related-products h4 { color: #e0457f !important; }
         .q-quantic-logo { height: 20px; opacity: 0.7; }
     `;
 
