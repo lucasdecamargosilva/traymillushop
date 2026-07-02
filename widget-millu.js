@@ -257,6 +257,36 @@
         .q-btn-inline-provador:hover { background: var(--c-ink); color: #fff; }
         .q-btn-inline-provador svg { width: 14px; height: 14px; flex-shrink: 0; }
 
+        /* ── Resultado: info do produto + comprar agora (igual Univisão) ── */
+        .q-result-prodinfo { text-align: left; margin-bottom: 10px; }
+        .q-result-prodname { font-family: var(--font-body); font-size: 20px; font-weight: 700; color: var(--c-ink); line-height: 1.25; margin-bottom: 6px; }
+        .q-result-prodprice { font-family: var(--font-display); font-size: 28px; letter-spacing: .5px; font-weight: 700; color: var(--c-ink); line-height: 1; }
+        .q-result-installment { font-family: var(--font-body); font-size: 12px; color: var(--c-muted); margin-top: 4px; letter-spacing: .2px; }
+        .q-seals { display: flex; justify-content: flex-start; gap: 30px; margin: 8px 0; padding: 12px 0; border-top: 1px solid var(--c-line); border-bottom: 1px solid var(--c-line); }
+        .q-seal { display: flex; align-items: center; gap: 9px; }
+        .q-seal > i { font-size: 24px; color: var(--c-primary, #e0457f); flex-shrink: 0; }
+        .q-seal span { font-family: var(--font-body); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; line-height: 1.25; color: var(--c-ink); text-align: left; }
+        .q-btn-buy-now {
+            width: 100%; padding: 16px 18px; margin-bottom: 10px;
+            background: var(--c-primary, #e0457f); color: #fff; border: 1px solid var(--c-primary, #e0457f);
+            border-radius: 14px; font-family: var(--font-body);
+            font-weight: 700; font-size: 15px; letter-spacing: .3px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: opacity .2s; box-sizing: border-box; line-height: 1.2; text-decoration: none;
+        }
+        .q-btn-buy-now:hover { opacity: .85; }
+        #q-buy-success { display: none; flex-direction: column; gap: 10px; }
+        .q-buy-ok-msg {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            background: #e8f5e9; color: #1b7e2e; border: 1px solid #b6e0bd;
+            border-radius: 14px; padding: 14px 16px; font-family: var(--font-body);
+            font-weight: 700; font-size: 14.5px; line-height: 1.3; text-align: center;
+        }
+        .q-buy-ok-msg i { font-size: 20px; }
+        /* Resultado enxuto: só comprar (esconde voltar/tentar) */
+        .q-card-ia.is-result #q-btn-back,
+        .q-card-ia.is-result #q-retry-btn { display: none !important; }
+
         /* ── Modal overlay ── */
         @keyframes q-modal-in { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
         #q-modal-ia {
@@ -895,6 +925,61 @@
         loadingBox.appendChild(loadingBar);
         scroll.appendChild(loadingBox);
 
+        // ── Botão "Comprar Agora" no resultado (Tray) ──────────────────────────────
+        // Preço FINAL (com desconto). Tray: .current-price dentro de .price.display-cash;
+        // fallback JSON-LD offers.price e por fim .product-price.
+        function getMainPrice() {
+            var el = document.querySelector('.product-price .current-price, .price.display-cash .current-price, .current-price');
+            var t = el ? (el.textContent || '').trim() : '';
+            if (t && /\d/.test(t)) return t.replace(/\s+/g, ' ');
+            try {
+                var ld = document.querySelector('script[type="application/ld+json"]');
+                if (ld) {
+                    var j = JSON.parse(ld.textContent);
+                    var arr = Array.isArray(j) ? j : [j];
+                    for (var i = 0; i < arr.length; i++) {
+                        var o = arr[i] && arr[i].offers;
+                        if (o) { var p = Array.isArray(o) ? o[0].price : o.price; if (p) return 'R$ ' + Number(p).toFixed(2).replace('.', ','); }
+                    }
+                }
+            } catch (e) {}
+            var pe = document.querySelector('.product-price');
+            var pt = pe ? (pe.textContent || '').trim() : '';
+            return /\d/.test(pt) ? pt.replace(/\s+/g, ' ') : '';
+        }
+        // Parcelamento (Tray): .product-installments / .txt-corparcelas.
+        function getInstallment() {
+            var el = document.querySelector('.product-installments, .txt-corparcelas, [class*="parcela"]');
+            var t = el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : '';
+            return /\dx/.test(t) ? t.replace(/^(ou|em at[ée])\s*/i, '') : '';
+        }
+        // Botão nativo de compra da loja (Tray).
+        function findStoreBuyBtn() {
+            return document.querySelector('#button-buy, .buy-button, .botao-comprar, .product-buy-button, [name="comprar"]');
+        }
+        // Clique em "Comprar Agora": aciona o botão nativo da loja (add-to-cart Tray).
+        function buyNow() {
+            var sb = findStoreBuyBtn();
+            if (sb) { try { sb.click(); } catch (e) {} }
+            var _b = document.getElementById('q-btn-buy-now'); if (_b) _b.style.display = 'none';
+            var _s = document.getElementById('q-buy-success'); if (_s) _s.style.display = 'flex';
+        }
+        // Nome + preço + parcelamento + selos + botão (layout igual à Univisão).
+        function populateBuyCta() {
+            var btn = document.getElementById('q-btn-buy-now');
+            if (!btn) return;
+            var succ = document.getElementById('q-buy-success'); if (succ) succ.style.display = 'none';
+            var price = getMainPrice();
+            var prodName = (document.querySelector('h1.product-name, h1.product__title, h1')?.innerText || document.title || '').trim();
+            var nameEl = document.getElementById('q-result-prodname'); if (nameEl) nameEl.textContent = prodName;
+            var priceEl = document.getElementById('q-result-prodprice'); if (priceEl) priceEl.textContent = price || '';
+            var instEl = document.getElementById('q-result-installment'); if (instEl) { var _i = getInstallment(); instEl.textContent = _i; instEl.style.display = _i ? 'block' : 'none'; }
+            var info = document.getElementById('q-result-prodinfo'); if (info && (prodName || price)) info.style.display = 'block';
+            var seals = document.getElementById('q-seals'); if (seals) seals.style.display = 'flex';
+            btn.style.display = findStoreBuyBtn() ? 'flex' : 'none';
+            btn.onclick = buyNow;
+        }
+
         // Result
         var stepResult = document.createElement('div');
         stepResult.id = 'q-step-result';
@@ -909,6 +994,48 @@
         resultImgCol.appendChild(finalImg);
         var resultActCol = document.createElement('div');
         resultActCol.id = 'q-result-actions-col';
+
+        // Info do produto (nome + preço + parcelamento) — igual à Univisão
+        var prodInfo = document.createElement('div');
+        prodInfo.className = 'q-result-prodinfo';
+        prodInfo.id = 'q-result-prodinfo';
+        prodInfo.style.display = 'none';
+        var prodNameEl = document.createElement('div');
+        prodNameEl.className = 'q-result-prodname';
+        prodNameEl.id = 'q-result-prodname';
+        var prodPriceEl = document.createElement('div');
+        prodPriceEl.className = 'q-result-prodprice';
+        prodPriceEl.id = 'q-result-prodprice';
+        var prodInstEl = document.createElement('div');
+        prodInstEl.className = 'q-result-installment';
+        prodInstEl.id = 'q-result-installment';
+        prodInfo.appendChild(prodNameEl);
+        prodInfo.appendChild(prodPriceEl);
+        prodInfo.appendChild(prodInstEl);
+        resultActCol.appendChild(prodInfo);
+
+        // Selos de confiança
+        var sealsEl = document.createElement('div');
+        sealsEl.className = 'q-seals';
+        sealsEl.id = 'q-seals';
+        sealsEl.style.display = 'none';
+        sealsEl.innerHTML = '<div class="q-seal"><i class="ph-fill ph-shield-check"></i><span>Compra<br>Segura</span></div>' +
+            '<div class="q-seal"><i class="ph-fill ph-lock-key"></i><span>Pagamento<br>Seguro</span></div>';
+        resultActCol.appendChild(sealsEl);
+
+        // Botão comprar agora + sucesso
+        var buyNowBtn = document.createElement('button');
+        buyNowBtn.className = 'q-btn-buy-now';
+        buyNowBtn.id = 'q-btn-buy-now';
+        buyNowBtn.style.display = 'none';
+        buyNowBtn.textContent = 'Comprar Agora';
+        resultActCol.appendChild(buyNowBtn);
+        var buySuccess = document.createElement('div');
+        buySuccess.id = 'q-buy-success';
+        buySuccess.innerHTML = '<div class="q-buy-ok-msg"><i class="ph ph-check-circle"></i> Produto adicionado ao carrinho!</div>' +
+            '<a class="q-btn-buy-now" id="q-btn-go-cart" href="/carrinho">Ir para o carrinho</a>';
+        resultActCol.appendChild(buySuccess);
+
         var backBtn = document.createElement('button');
         backBtn.className = 'q-btn-outline';
         backBtn.id = 'q-btn-back';
@@ -1365,6 +1492,7 @@
                     finalImg.src = URL.createObjectURL(blob);
                     card.classList.add('is-result');
                     stepResult.style.display = 'flex';
+                    populateBuyCta();
                     loadRelatedProducts();
                 } else if (res.status === 401 || res.status === 403) {
                     loadingBox.style.display = 'none';
