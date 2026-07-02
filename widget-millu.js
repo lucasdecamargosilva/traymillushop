@@ -928,28 +928,53 @@
         // ── Botão "Comprar Agora" no resultado (Tray) ──────────────────────────────
         // Preço FINAL (com desconto). Tray: .current-price dentro de .price.display-cash;
         // fallback JSON-LD offers.price e por fim .product-price.
-        function getMainPrice() {
-            var el = document.querySelector('.product-price .current-price, .price.display-cash .current-price, .current-price');
-            var t = el ? (el.textContent || '').trim() : '';
-            if (t && /\d/.test(t)) return t.replace(/\s+/g, ' ');
+        // Converte texto de preço BR ("R$ 1.234,56") para número.
+        function _priceToNum(t) {
+            var m = String(t || '').replace(/[^\d.,]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
+            var n = parseFloat(m);
+            return isNaN(n) ? 0 : n;
+        }
+        // Preço canônico via JSON-LD (offers.price) — fonte da verdade do produto principal.
+        // Em kits "2 em 1" a página tem VÁRIOS .current-price (um por combinação); o querySelector
+        // pegaria o primeiro (errado). O JSON-LD sempre reflete o produto/variação principal.
+        function _getLdPrice() {
             try {
-                var ld = document.querySelector('script[type="application/ld+json"]');
-                if (ld) {
-                    var j = JSON.parse(ld.textContent);
+                var s = document.querySelectorAll('script[type="application/ld+json"]');
+                for (var i = 0; i < s.length; i++) {
+                    var j = JSON.parse(s[i].textContent);
                     var arr = Array.isArray(j) ? j : [j];
-                    for (var i = 0; i < arr.length; i++) {
-                        var o = arr[i] && arr[i].offers;
-                        if (o) { var p = Array.isArray(o) ? o[0].price : o.price; if (p) return 'R$ ' + Number(p).toFixed(2).replace('.', ','); }
+                    for (var k = 0; k < arr.length; k++) {
+                        var o = arr[k] && arr[k].offers;
+                        if (o) { var p = Array.isArray(o) ? o[0].price : o.price; if (p) return Number(p); }
                     }
                 }
             } catch (e) {}
+            return 0;
+        }
+        function getMainPrice() {
+            var ld = _getLdPrice();
+            if (ld > 0) return 'R$ ' + ld.toFixed(2).replace('.', ',');
+            var el = document.querySelector('.product-price .current-price, .price.display-cash .current-price, .current-price');
+            var t = el ? (el.textContent || '').trim() : '';
+            if (t && /\d/.test(t)) return t.replace(/\s+/g, ' ');
             var pe = document.querySelector('.product-price');
             var pt = pe ? (pe.textContent || '').trim() : '';
             return /\d/.test(pt) ? pt.replace(/\s+/g, ' ') : '';
         }
-        // Parcelamento (Tray): .product-installments / .txt-corparcelas.
+        // Parcelamento amarrado ao MESMO bloco de preço que casa com o preço canônico
+        // (evita pegar o parcelamento de outra combinação do kit).
         function getInstallment() {
-            var el = document.querySelector('.product-installments, .txt-corparcelas, [class*="parcela"]');
+            var ld = _getLdPrice();
+            var chosen = null;
+            if (ld > 0) {
+                var blocks = document.querySelectorAll('.product-price, .price.display-cash');
+                for (var i = 0; i < blocks.length; i++) {
+                    var cp = blocks[i].querySelector('.current-price');
+                    if (cp && Math.abs(_priceToNum(cp.textContent) - ld) < 0.01) { chosen = blocks[i]; break; }
+                }
+            }
+            var scope = chosen || document;
+            var el = scope.querySelector('.product-installments, .txt-corparcelas, [class*="parcela"]');
             var t = el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : '';
             if (!/\dx/.test(t)) return '';
             t = t.replace(/^(ou|em at[ée])\s*/i, '');
@@ -957,16 +982,17 @@
             t = t.replace(/(sem juros|com juros).*/i, '$1');
             return t.trim();
         }
-        // Botão nativo de compra da loja (Tray).
+        // Botão nativo de compra da loja (Tray) — submit do form_comprar.
         function findStoreBuyBtn() {
             return document.querySelector('#button-buy, .buy-button, .botao-comprar, .product-buy-button, [name="comprar"]');
         }
-        // Clique em "Comprar Agora": aciona o botão nativo da loja (add-to-cart Tray).
+        // "Comprar Agora": fecha o provador e aciona o botão nativo da loja. Na Tray, o
+        // #button-buy é um submit que trata a seleção de variação (kit) e redireciona pro
+        // carrinho nativamente — por isso NÃO simulamos "adicionado" nem link /carrinho fixo.
         function buyNow() {
             var sb = findStoreBuyBtn();
+            try { closeModal(); } catch (e) {}
             if (sb) { try { sb.click(); } catch (e) {} }
-            var _b = document.getElementById('q-btn-buy-now'); if (_b) _b.style.display = 'none';
-            var _s = document.getElementById('q-buy-success'); if (_s) _s.style.display = 'flex';
         }
         // Nome + preço + parcelamento + selos + botão (layout igual à Univisão).
         function populateBuyCta() {
@@ -1034,11 +1060,6 @@
         buyNowBtn.style.display = 'none';
         buyNowBtn.textContent = 'Comprar Agora';
         resultActCol.appendChild(buyNowBtn);
-        var buySuccess = document.createElement('div');
-        buySuccess.id = 'q-buy-success';
-        buySuccess.innerHTML = '<div class="q-buy-ok-msg"><i class="ph ph-check-circle"></i> Produto adicionado ao carrinho!</div>' +
-            '<a class="q-btn-buy-now" id="q-btn-go-cart" href="/carrinho">Ir para o carrinho</a>';
-        resultActCol.appendChild(buySuccess);
 
         var backBtn = document.createElement('button');
         backBtn.className = 'q-btn-outline';
