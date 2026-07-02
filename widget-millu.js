@@ -682,7 +682,7 @@
         var marinaImg = document.createElement('img');
         marinaImg.src = MARINA_LOGO;
         marinaImg.alt = 'Ótica Millu';
-        marinaImg.style.cssText = 'height:28px;width:auto;object-fit:contain;';
+        marinaImg.style.cssText = 'height:48px;width:auto;object-fit:contain;';
         marinaImg.onerror = function() { this.style.display = 'none'; };
         header.appendChild(marinaImg);
         scroll.appendChild(header);
