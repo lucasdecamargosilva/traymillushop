@@ -56,7 +56,7 @@
     const apiKey = '5f884c06e29d832d68f4054f8d84aac4c9357613fdf37f9713c432446aaa941b';
     window.PROVOU_LEVOU_API_KEY = apiKey;
 
-    let BUTTON_MODE = 'both';
+    let BUTTON_MODE = 'image';   // só o selo na foto do produto (sem o botão acima do Comprar)
     const STORE_ID = '602343';
     const API_HOST = 'https://lojista.provoulevou.com.br';
     const WEBHOOK_PROVA = 'https://n8n.segredosdodrop.com/webhook/gerador-oculos';
