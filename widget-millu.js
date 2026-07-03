@@ -244,6 +244,9 @@
         .q-btn-trigger-ia img { width: 100%; height: 100%; object-fit: contain; }
         @media (min-width: 768px) { .q-btn-trigger-ia { width: 70px; height: 70px; } }
 
+        /* Fonte da loja (Montserrat) nos controles do modal — input/button/select não herdam */
+        #q-modal-ia, #q-modal-ia input, #q-modal-ia button, #q-modal-ia select, #q-modal-ia textarea { font-family: 'Montserrat', sans-serif; }
+
         /* ── Inline button ── */
         .q-btn-inline-provador {
             display: flex; align-items: center; justify-content: center; gap: 7px;
