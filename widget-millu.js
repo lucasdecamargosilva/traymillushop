@@ -353,9 +353,9 @@
         #q-header-provador h1 {
             margin: 0;
             font-family: var(--font-display);
-            font-size: 28px; letter-spacing: 4px;
+            font-size: 19px; letter-spacing: 2px;
             color: var(--c-ink); text-transform: uppercase;
-            font-weight: 400; line-height: 1;
+            font-weight: 700; line-height: 1;
         }
 
         /* ── Main step ── */
@@ -390,8 +390,8 @@
         /* ── Section label ── */
         .q-section-label {
             font-family: var(--font-display);
-            font-size: 20px; letter-spacing: 3px; text-transform: uppercase;
-            color: var(--c-ink); margin: 0 0 14px; font-weight: 400;
+            font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--c-ink); margin: 0 0 14px; font-weight: 600;
             text-align: center;
         }
 
@@ -461,8 +461,8 @@
             width: 100%; height: 52px;
             background: var(--c-ink); color: #fff;
             border: none; border-radius: 14px;
-            font-family: var(--font-display); font-size: 17px;
-            letter-spacing: 3px; text-transform: uppercase;
+            font-family: var(--font-display); font-size: 14px;
+            letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
             cursor: pointer; transition: opacity 0.2s; box-sizing: border-box;
         }
         .q-btn-black:hover:not(:disabled) { opacity: 0.82; }
