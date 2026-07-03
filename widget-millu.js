@@ -56,7 +56,7 @@
     const apiKey = '5f884c06e29d832d68f4054f8d84aac4c9357613fdf37f9713c432446aaa941b';
     window.PROVOU_LEVOU_API_KEY = apiKey;
 
-    let BUTTON_MODE = 'image';   // só o selo na foto do produto (sem o botão acima do Comprar)
+    let BUTTON_MODE = 'both';   // selo na foto + botão inline acima do "Comprar com Grau"
     const STORE_ID = '602343';
     const API_HOST = 'https://lojista.provoulevou.com.br';
     const WEBHOOK_PROVA = 'https://n8n.segredosdodrop.com/webhook/gerador-oculos';
@@ -215,7 +215,7 @@
     // ─── 4. ESTILOS (design Califa) ───────────────────────────────────────────────
     const styles = `
         /* ── Fontes ── */
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
 
         :root {
             --c-bg: #ffffff;
@@ -225,8 +225,8 @@
             --c-line: #f5c6da;
             --c-accent: #111111;
             --c-danger: #cc3333;
-            --font-display: 'Bebas Neue', sans-serif;
-            --font-body: 'DM Sans', sans-serif;
+            --font-display: 'Montserrat', sans-serif;
+            --font-body: 'Montserrat', sans-serif;
         }
 
         /* ── Trigger (selo sobre foto) ── */
@@ -249,12 +249,12 @@
             display: flex; align-items: center; justify-content: center; gap: 7px;
             width: 100%; padding: 13px 16px;
             background: transparent; color: var(--c-ink);
-            border: 1.5px solid var(--c-ink); border-radius: 0;
-            font-family: 'Work Sans', var(--font-body), sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
-            cursor: pointer; transition: background 0.25s, color 0.25s;
-            margin-bottom: 10px; box-sizing: border-box;
+            border: 1.5px solid var(--c-ink); border-radius: 6px;
+            font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+            cursor: pointer; transition: opacity 0.2s;
+            margin: 10px 0; box-sizing: border-box;
         }
-        .q-btn-inline-provador:hover { background: var(--c-ink); color: #fff; }
+        .q-btn-inline-provador:hover { opacity: 0.6; }
         .q-btn-inline-provador svg { width: 14px; height: 14px; flex-shrink: 0; }
 
         /* ── Resultado: info do produto + comprar agora (igual Univisão) ── */
@@ -1214,17 +1214,25 @@
                 openModal();
             });
 
-            var buySels = [
-                '.frame_product_action_button', '[data-buy-action-button]', '.buy_action_button',
-                '.product-buy-button', '.wrapper-btn-buy', '.button-buy', '.buy-button', '#buy-button',
-                '.botao-comprar', '#botao-comprar', '.product-buy', '.btn-buy',
-                'button[name="buy"]', 'input[name="buy"]',
-                '.product-colum-right .box-buy', '.box-buy',
-                '.product-action', '.product-actions', '.add-to-cart', '#addToCart'
-            ];
-            for (var j = 0; j < buySels.length; j++) {
-                var bel = document.querySelector(buySels[j]);
-                if (bel) { bel.parentNode.insertBefore(inlineBtn, bel); break; }
+            // Millu (Tray): acima do "Comprar com Grau" principal (.wp-prod dentro de .content-wp-prod).
+            // Os .btn-pay-wp são os botões do CARROSSEL de variações do kit — NÃO usar.
+            var wpProd = [].slice.call(document.querySelectorAll('.wp-prod')).filter(function (b) { return b.offsetParent !== null; })[0];
+            var grauBlock = wpProd ? (wpProd.closest('.content-wp-prod') || wpProd) : null;
+            if (grauBlock && grauBlock.parentNode) {
+                grauBlock.parentNode.insertBefore(inlineBtn, grauBlock);
+            } else {
+                var buySels = [
+                    '.frame_product_action_button', '[data-buy-action-button]', '.buy_action_button',
+                    '.product-buy-button', '.wrapper-btn-buy', '.button-buy', '.buy-button', '#buy-button',
+                    '.botao-comprar', '#botao-comprar', '.product-buy', '.btn-buy',
+                    'button[name="buy"]', 'input[name="buy"]',
+                    '.product-colum-right .box-buy', '.box-buy',
+                    '.product-action', '.product-actions', '.add-to-cart', '#addToCart'
+                ];
+                for (var j = 0; j < buySels.length; j++) {
+                    var bel = document.querySelector(buySels[j]);
+                    if (bel) { bel.parentNode.insertBefore(inlineBtn, bel); break; }
+                }
             }
 
             if (BUTTON_MODE === 'buy') {
