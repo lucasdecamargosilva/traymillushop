@@ -61,6 +61,7 @@
     const API_HOST = 'https://lojista.provoulevou.com.br';
     const WEBHOOK_PROVA = 'https://n8n.segredosdodrop.com/webhook/gerador-oculos';
     const WEBHOOK_CHECK_LIMIT = 'https://n8n.segredosdodrop.com/webhook/millu-check-limit';
+    const WEBHOOK_BUY_CLICK = 'https://n8n.segredosdodrop.com/webhook/pl-provador-buy-click';
     const WEBHOOK_PIX = 'https://n8n.segredosdodrop.com/webhook/cacife-pix';
     const WEBHOOK_PIX_STATUS = 'https://n8n.segredosdodrop.com/webhook/cacife-pix-status';
     const MARINA_LOGO = 'https://images.tcdn.com.br/files/602343/themes/91/img/settings/logo-otica.png';
@@ -991,10 +992,17 @@
         function findStoreBuyBtn() {
             return document.querySelector('#button-buy, .buy-button, .botao-comprar, .product-buy-button, [name="comprar"]');
         }
-        // "Comprar Agora": fecha o provador e aciona o botão nativo da loja. Na Tray, o
+        // "Comprar Agora": marca carrinho_adicionado na prova (tracking por telefone, pro
+        // funil "Clicou em comprar" do dashboard) e aciona o botão nativo da loja. Na Tray, o
         // #button-buy é um submit que trata a seleção de variação (kit) e redireciona pro
         // carrinho nativamente — por isso NÃO simulamos "adicionado" nem link /carrinho fixo.
         function buyNow() {
+            try {
+                var _pe = document.getElementById('q-phone') || document.getElementById('mc-phone') || document.querySelector('#q-modal-ia input[type=tel], input[type=tel]');
+                var _tp = (_pe && _pe.value) || '';
+                var _td = (document.querySelector('h1.product-name, h1.product__title, h1') || {}).innerText || document.title || '';
+                fetch(WEBHOOK_BUY_CLICK, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: _tp, origin: location.origin, produto: _td }) }).catch(function () {});
+            } catch (e) {}
             var sb = findStoreBuyBtn();
             try { closeModal(); } catch (e) {}
             if (sb) { try { sb.click(); } catch (e) {} }
