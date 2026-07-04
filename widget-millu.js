@@ -964,26 +964,28 @@
             var pt = pe ? (pe.textContent || '').trim() : '';
             return /\d/.test(pt) ? pt.replace(/\s+/g, ' ') : '';
         }
-        // Parcelamento amarrado ao MESMO bloco de preço que casa com o preço canônico
-        // (evita pegar o parcelamento de outra combinação do kit).
+        // Parcelamento amarrado ao PREÇO canônico: no kit clip-on "2 em 1" a página tem
+        // vários parcelamentos (combinações diferentes) no DOM. Escolhe a parcela cujo
+        // total (Nx × valor) casa com o preço do produto — assim nunca mostra a parcela de
+        // outra combinação (ex.: 2x 94,95 = 189,90 quando o produto é 219,90 = 3x 73,30).
         function getInstallment() {
-            var ld = _getLdPrice();
-            var chosen = null;
-            if (ld > 0) {
-                var blocks = document.querySelectorAll('.product-price, .price.display-cash');
-                for (var i = 0; i < blocks.length; i++) {
-                    var cp = blocks[i].querySelector('.current-price');
-                    if (cp && Math.abs(_priceToNum(cp.textContent) - ld) < 0.01) { chosen = blocks[i]; break; }
-                }
+            var priceNum = _getLdPrice() || _priceToNum(getMainPrice());
+            if (!priceNum || priceNum <= 0) return '';
+            var els = document.querySelectorAll('.product-installments, .txt-corparcelas, [class*="parcela"]');
+            var tol = Math.max(0.5, priceNum * 0.02); // tolerância p/ arredondamento das parcelas
+            var fallback = '';
+            for (var i = 0; i < els.length; i++) {
+                var t = (els[i].textContent || '').replace(/\s+/g, ' ').trim();
+                var m = t.match(/(\d+)\s*x\s*(?:de\s*)?R?\$?\s*([\d.,]+)/i);
+                if (!m) continue;
+                var n = parseInt(m[1], 10), v = _priceToNum(m[2]);
+                if (!n || !v) continue;
+                var clean = t.replace(/^(ou|em at[ée])\s*/i, '').replace(/(sem juros|com juros).*/i, '$1').trim();
+                if (!fallback) fallback = clean;
+                if (Math.abs(n * v - priceNum) <= tol) return clean; // total casa com o preço -> essa é a certa
             }
-            var scope = chosen || document;
-            var el = scope.querySelector('.product-installments, .txt-corparcelas, [class*="parcela"]');
-            var t = el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : '';
-            if (!/\dx/.test(t)) return '';
-            t = t.replace(/^(ou|em at[ée])\s*/i, '');
-            // Corta a bandeira/adquirente que a Tray anexa (ex.: "Sem juros MasterCard - Vindi")
-            t = t.replace(/(sem juros|com juros).*/i, '$1');
-            return t.trim();
+            // nenhuma parcela bate com o preço: melhor não mostrar do que mostrar errada
+            return '';
         }
         // Botão nativo de compra da loja (Tray) — submit do form_comprar.
         function findStoreBuyBtn() {
