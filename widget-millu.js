@@ -1300,7 +1300,21 @@
         function plTrackProved(rawPhone) { try { var d = (rawPhone || '').replace(/\D/g, ''); if (d.length > 11 && d.slice(0, 2) === '55') d = d.slice(2); fetch(WEBHOOK_OPEN_PL, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: plSid(), proved: true, telefone_cliente: d || null }) }).catch(function () {}); } catch (e) {} }
         function openModal()  {
             plTrackOpen(); modal.style.display = 'flex'; lockBodyScroll(); }
-        function closeModal() { modal.style.display = 'none'; unlockBodyScroll(); }
+        function closeModal() { modal.style.display = 'none'; unlockBodyScroll(); 
+            // --- volta pra tela inicial ao fechar (pos-prova) + limpa input p/ 2a foto enviar ---
+            try {
+                var _qsr = document.getElementById('q-step-result'); if (_qsr) _qsr.style.display = 'none';
+                var _qsp = (typeof photoStep !== 'undefined' && photoStep) ? photoStep : document.getElementById('q-step-photo');
+                if (_qsp) _qsp.style.display = 'flex';
+                var _qcard = document.querySelector('.q-card-ia'); if (_qcard) _qcard.classList.remove('is-result');
+                if (typeof userPhoto !== 'undefined') userPhoto = null;
+                if (typeof pixPaymentId !== 'undefined') pixPaymentId = null;
+                if (typeof preImg !== 'undefined' && preImg) preImg.style.display = 'none';
+                if (typeof facePlaceholder !== 'undefined' && facePlaceholder) facePlaceholder.style.display = 'flex';
+                try { if (typeof cameraInput !== 'undefined' && cameraInput) cameraInput.value = ''; if (typeof galleryInput !== 'undefined' && galleryInput) galleryInput.value = ''; } catch (e) {}
+                if (typeof checkFields === 'function') checkFields();
+            } catch (e) {}
+        }
 
         openBtn.onclick = function(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
@@ -1313,6 +1327,7 @@
         modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
 
         retryBtn.onclick = function() {
+            try { if (typeof cameraInput !== 'undefined' && cameraInput) cameraInput.value = ''; if (typeof galleryInput !== 'undefined' && galleryInput) galleryInput.value = ''; } catch (e) {}
             stepResult.style.display = 'none';
             stepUpload.style.display = 'flex';
             card.classList.remove('is-result');
