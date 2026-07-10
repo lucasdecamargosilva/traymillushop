@@ -1031,9 +1031,7 @@
             } catch (e) {}
             var sb = findStoreBuyBtn();
             try { closeModal(); } catch (e) {}
-            // garante que o provador (z-index 999999) saiu da frente ANTES de abrir o modal
-            // de seleção de lentes/carrinho da loja (z-index <= ~3040), senão ele abre "atrás".
-            requestAnimationFrame(function () { if (sb) { try { sb.click(); } catch (e) {} } });
+            if (sb) { try { sb.click(); } catch (e) {} }
         }
         // Nome + preço + parcelamento + selos + botão (layout igual à Univisão).
         function populateBuyCta() {
