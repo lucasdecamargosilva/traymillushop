@@ -1523,6 +1523,7 @@
         galleryInput.onchange = function(e) { handlePhotoSelected(e.target.files[0]); };
 
         async function runGeneration() {
+            if (runGeneration._busy) return;   // trava clique duplo: nao dispara 2 provas
             if (!userPhoto) return;
             var keyToUse = window.PROVOU_LEVOU_API_KEY;
             if (!keyToUse) { alert('Erro: API Key não configurada.'); return; }
@@ -1538,6 +1539,7 @@
             loadingBox.style.display = 'flex';
             startLoadingProgress();
 
+            runGeneration._busy = true;
             try {
                 var fd = new FormData();
                 fd.append('person_image', await toJpeg(userPhoto), 'person.jpg');
@@ -1625,6 +1627,8 @@
                 loadingBox.style.display = 'none';
                 stepUpload.style.display = 'flex';
                 showError();
+            } finally {
+                runGeneration._busy = false;   // libera pra proxima prova
             }
         }
 
