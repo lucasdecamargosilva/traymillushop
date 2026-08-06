@@ -219,6 +219,7 @@
 
     // ─── 4. ESTILOS (design Califa) ───────────────────────────────────────────────
     const styles = `
+/* PL: borda arredondada do modal */@media(min-width:768px){.q-card-ia,.q-card,#q-card-ia,#q-card,.q-modal-card{border-radius:16px !important;overflow:hidden;}}
         /* ── Fontes ── */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
 
