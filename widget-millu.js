@@ -1,5 +1,17 @@
 /* PL: provador REATIVADO na loja (Lucas, 07/07/2026). Limite 5 provas/dia + tela WhatsApp da consultora ao bater o limite. */
 (function () {
+    // PL (14/10/2026): checagem central (pl-plano-check). Loja desligada no cadastro (active=false) ou plano estourado
+    // com bloqueio ligado => esconde o provador. Religar = marcar a loja como ativa no cadastro, sem mexer aqui.
+    try {
+        fetch('https://n8n.segredosdodrop.com/webhook/pl-plano-check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dominio: location.hostname }) })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || d.plan_limit !== true) return;
+                window.__plPlanLimit = true;
+                try { var st = document.createElement('style'); st.id = 'pl-plan-limit-hide'; st.textContent = '#q-open-ia,.q-btn-trigger-ia,.q-btn-inline-provador,#q-modal-ia{display:none !important}'; document.head.appendChild(st); } catch (_) {}
+            })
+            .catch(function () {});
+    } catch (_) {}
     function toJpeg(file){return new Promise(function(res){try{var img=new Image();var u=URL.createObjectURL(file);img.onload=function(){URL.revokeObjectURL(u);var w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;if(!w||!h){res(file);return;}var sc=Math.min(1,1280/Math.max(w,h));var cw=Math.round(w*sc),ch=Math.round(h*sc);var c=document.createElement('canvas');c.width=cw;c.height=ch;c.getContext('2d').drawImage(img,0,0,cw,ch);c.toBlob(function(b){res(b||file);},'image/jpeg',0.92);};img.onerror=function(){URL.revokeObjectURL(u);res(file);};img.src=u;}catch(e){res(file);}});}
 
     function isValidBRPhone(nums) {
