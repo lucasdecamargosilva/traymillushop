@@ -1,5 +1,8 @@
 /* PL: provador REATIVADO na loja (Lucas, 07/07/2026). Limite 5 provas/dia + tela WhatsApp da consultora ao bater o limite. */
 (function () {
+    // PL (15/10/2026): provador DESLIGADO na Millu (pedido do Lucas). Não carrega nada: nem botão, nem modal.
+    // Para religar: apagar estas 2 linhas e marcar a loja como ativa no cadastro.
+    if (true) { try { window.__plProvadorDesligado = true; } catch (_) {} return; }
     // PL (14/10/2026): checagem central (pl-plano-check). Loja desligada no cadastro (active=false) ou plano estourado
     // com bloqueio ligado => esconde o provador. Religar = marcar a loja como ativa no cadastro, sem mexer aqui.
     try {
